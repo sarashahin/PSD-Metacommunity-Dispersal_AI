@@ -1,0 +1,1 @@
+<!-- content from regenerate_all_inference_worlds_SPATIAL.sh -->

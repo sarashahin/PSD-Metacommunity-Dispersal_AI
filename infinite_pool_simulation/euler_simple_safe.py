@@ -1,0 +1,1 @@
+<!-- content from euler_simple_safe.py -->

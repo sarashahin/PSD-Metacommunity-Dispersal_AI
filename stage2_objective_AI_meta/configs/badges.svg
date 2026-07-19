@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="390" height="20" role="img" aria-label="component: configuration | file: config.py | type: dataclasses">
+<g transform="translate(0,0)">
+<clipPath id="c0"><rect width="166" height="20" rx="3"/></clipPath>
+<g clip-path="url(#c0)">
+<rect width="75" height="20" fill="#555"/>
+<rect x="75" width="91" height="20" fill="#007ec6"/>
+</g>
+<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+<text x="38" y="15" fill="#010101" fill-opacity=".3">component</text>
+<text x="38" y="14">component</text>
+<text x="120" y="15" fill="#010101" fill-opacity=".3">configuration</text>
+<text x="120" y="14">configuration</text>
+</g></g>
+<g transform="translate(170,0)">
+<clipPath id="c1"><rect width="97" height="20" rx="3"/></clipPath>
+<g clip-path="url(#c1)">
+<rect width="32" height="20" fill="#555"/>
+<rect x="32" width="65" height="20" fill="#007ec6"/>
+</g>
+<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+<text x="16" y="15" fill="#010101" fill-opacity=".3">file</text>
+<text x="16" y="14">file</text>
+<text x="64" y="15" fill="#010101" fill-opacity=".3">config.py</text>
+<text x="64" y="14">config.py</text>
+</g></g>
+<g transform="translate(271,0)">
+<clipPath id="c2"><rect width="119" height="20" rx="3"/></clipPath>
+<g clip-path="url(#c2)">
+<rect width="38" height="20" fill="#555"/>
+<rect x="38" width="81" height="20" fill="#8a2be2"/>
+</g>
+<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+<text x="19" y="15" fill="#010101" fill-opacity=".3">type</text>
+<text x="19" y="14">type</text>
+<text x="78" y="15" fill="#010101" fill-opacity=".3">dataclasses</text>
+<text x="78" y="14">dataclasses</text>
+</g></g>
+</svg>

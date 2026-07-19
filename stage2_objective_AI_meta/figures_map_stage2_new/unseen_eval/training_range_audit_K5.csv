@@ -1,0 +1,10 @@
+bucket,train_n,train_frac,eval_n,eval_frac,frac_ratio
+EASY,22813,0.8506,2242,0.7864,1.082
+MODERATE,3410,0.1271,460,0.1613,0.788
+HARD,597,0.0223,149,0.0523,0.426
+,,,,,
+# range_KS_train_vs_eval,0.0714
+# train_p99,25.0,train_max,55
+# eval_HARD_p95,42.0,eval_max,54
+# train_HARD_count,597
+# verdict,DATA_CANDIDATE

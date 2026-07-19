@@ -1,0 +1,7 @@
+set,bucket,n,ks_range
+BEFORE (raw Σp),MODERATE,119,1.0
+BEFORE (raw Σp),HARD,31,1.0
+BEFORE (raw Σp),POOLED,150,1.0
+AFTER (calibrated Σp),MODERATE,119,0.7731
+AFTER (calibrated Σp),HARD,31,1.0
+AFTER (calibrated Σp),POOLED,150,0.82

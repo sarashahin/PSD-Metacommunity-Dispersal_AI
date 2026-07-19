@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="547" height="20" role="img" aria-label="stage: 1 helpers | tasks: sweeps &amp; checks | needs: Stage-1 sim code | GPU: for sweeps">
+<g transform="translate(0,0)">
+<clipPath id="c0"><rect width="110" height="20" rx="3"/></clipPath>
+<g clip-path="url(#c0)">
+<rect width="45" height="20" fill="#555"/>
+<rect x="45" width="65" height="20" fill="#007ec6"/>
+</g>
+<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+<text x="22" y="15" fill="#010101" fill-opacity=".3">stage</text>
+<text x="22" y="14">stage</text>
+<text x="78" y="15" fill="#010101" fill-opacity=".3">1 helpers</text>
+<text x="78" y="14">1 helpers</text>
+</g></g>
+<g transform="translate(114,0)">
+<clipPath id="c1"><rect width="153" height="20" rx="3"/></clipPath>
+<g clip-path="url(#c1)">
+<rect width="45" height="20" fill="#555"/>
+<rect x="45" width="108" height="20" fill="#27ae60"/>
+</g>
+<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+<text x="22" y="15" fill="#010101" fill-opacity=".3">tasks</text>
+<text x="22" y="14">tasks</text>
+<text x="99" y="15" fill="#010101" fill-opacity=".3">sweeps &amp; checks</text>
+<text x="99" y="14">sweeps &amp; checks</text>
+</g></g>
+<g transform="translate(271,0)">
+<clipPath id="c2"><rect width="158" height="20" rx="3"/></clipPath>
+<g clip-path="url(#c2)">
+<rect width="45" height="20" fill="#555"/>
+<rect x="45" width="113" height="20" fill="#fe7d37"/>
+</g>
+<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+<text x="22" y="15" fill="#010101" fill-opacity=".3">needs</text>
+<text x="22" y="14">needs</text>
+<text x="102" y="15" fill="#010101" fill-opacity=".3">Stage-1 sim code</text>
+<text x="102" y="14">Stage-1 sim code</text>
+</g></g>
+<g transform="translate(433,0)">
+<clipPath id="c3"><rect width="114" height="20" rx="3"/></clipPath>
+<g clip-path="url(#c3)">
+<rect width="36" height="20" fill="#555"/>
+<rect x="36" width="78" height="20" fill="#76B900"/>
+</g>
+<g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" font-size="11">
+<text x="18" y="15" fill="#010101" fill-opacity=".3">GPU</text>
+<text x="18" y="14">GPU</text>
+<text x="75" y="15" fill="#010101" fill-opacity=".3">for sweeps</text>
+<text x="75" y="14">for sweeps</text>
+</g></g>
+</svg>
