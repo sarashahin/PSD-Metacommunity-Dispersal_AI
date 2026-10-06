@@ -12,10 +12,9 @@ authors:
   - family-names: Shahin
     given-names: Sara
     affiliation: "Queen Mary University of London"
-# To add co-authors, copy the two lines below and fill them in:
-#  - family-names: <Surname>
-#    given-names: <First name>
-#    affiliation: "<Institution>"
+  - family-names: Rossberg
+    given-names: "Axel G."
+    affiliation: "Queen Mary University of London"
 version: 1.0.0
 date-released: "2026-10-06"
 license: MIT
