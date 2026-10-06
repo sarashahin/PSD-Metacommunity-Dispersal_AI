@@ -1,57 +1,100 @@
-# `figures_map_stage2_new/` — Final Stage-2 Figures (unseen-eval)
+# `figures_map_stage2_new/` — the paper's figures
 
 ![project badges](badges.svg)
 
-This folder holds the **rendered figures and summary CSVs** for Stage 2, evaluated on
-the **unseen** metacommunities (new environment seeds 789/2024 the model never trained on).
-It was transferred from the local working directory `figures_map_axel_stage2_new/`;
-the scripts that produce these outputs still write to a directory named
-`figures_map_axel_stage2_new/` (note the `_axel_`), so when you regenerate them either
-point the scripts' `--output-*` at this folder or rename accordingly.
+This folder holds the **final figures used in the Objective‑2 paper**, plus the small
+CSV tables of numbers behind each one. Every figure here was produced on the
+**unseen test worlds** — metacommunities grown from environment seeds the model never
+saw during training (seeds 789 / 2024) — so they show how the model does on genuinely
+new data, not on data it memorised.
 
-All generator commands live in [`../models/README.md`](../models/README.md) §"Figures".
-Below is the map from **each output here → the exact script that produced it**, so any
-figure can be reproduced. Run from `stage2_objective_AI_meta/`.
+All figures live under `unseen_eval/` in **9 groups**. Each group below says, in plain
+words: **what you are looking at**, **which paper figure it is**, and **the one script
+that makes it** (all scripts are in [`../models/`](../models/README.md)).
 
-## `unseen_eval/` contents → producing script
+---
 
-| Output (file / subfolder) | Produced by | Key inputs |
-|---|---|---|
-| `Fig02_three_map_K5_<stem>.png` | `models/axel_per_species_map_ecological.py` (`--figure-style three_map`) | `reconstructions_unseen/<stem>/recon_fixed_b5_samples.npz` + `results/data/data_eval_unseen/<stem>.npz` |
-| `Fig02_three_map_metrics_K5_<stem>.png` | `models/axel_per_species_map_ecological.py` (metrics overlay) | same |
-| `Fig03_cross_world_summary_K{5,10}[_sp30][_metrics].{png,csv}` | `models/axel_cross_world_summary_figure.py` and `..._metrics.py` | `--truth-dir`, `--recon-dir-pattern` |
-| `dist_K{5,10}_indist/three_distributions*_v3.{png,csv}` | `models/axel_ecological_distribution_figure.py` (`--method v3`) | `wide_range_species.csv`, recon dirs |
-| `calibration/`, `calibration_p30/` (`Fig_calibration*.png`, `pit_*.csv`) | `models/pit_calibration_histogram.py` + `models/calibration_vs_nobs.py`, fed by `models/posterior_per_species.py --csv-path` | PIT CSVs |
-| `calibration_diag_K{5,10}.{csv,png}`, `calibration_indist*_K10.csv` | `axel_bootstrap_and_calibration.py <K> <N_BOOT>` (paths hardcoded to unseen dirs) | `reconstructions_unseen/`, `data_eval_unseen/` |
-| `baseline_compare_K{5,10}.csv` | `baseline_smoother_compare.py <K>` (diffusion vs Gaussian smoother) | same |
-| `posterior_per_species/`, `posterior_PROP/` (`Fig_posterior_*`, `*_conditional.png`, `posterior_metrics_*.csv`) | `models/posterior_per_species.py` | recon dirs (fixed & proportional) |
-| `recall/`, `recall_effort/` (`Fig_recall_*`, `recall_vs_observations.csv`, `rve_*.csv`) | `models/recall_vs_observations.py` | fixed + proportional recon dirs |
-| `multi_world_K5_summary.csv` | `models/multi_world_v7_evaluation.py` | `wide_range_species.csv`, recon dirs |
-| `multi_world_K5_2x_summary.csv` | `models/multi_world_2x_evaluation.py` (`--calibrate 2x_truth`) | same |
-| `final_unified_149_K5/Fig01..Fig15*.png` + `*.csv` | `models/make_figure1_honest_map.py` | the two `multi_world_*` CSVs + recon dirs |
-| `wide_range_indist_K{5,10}.csv` | `models/build_wide_range_csv.py --K {5,10}` | truth metacommunities |
-| `range_estimator_diagnostic_K10.csv` | `range_estimator_diagnostic.py` | recon dirs |
-| `training_range_audit_K5.csv` | `audit_training_range_distribution.py` | training metacommunities |
-| `proportional_masks/obs_count_extremes_p0.10.png` | `models/proportional_observations.py` | truth metacommunities |
-| `showcase/`, `showcase_p30/` | curated `posterior_per_species.py` / `axel_per_species_map_ecological.py` runs on low-dispersal metacommunities | recon dirs |
+## A 60‑second glossary (plain English)
 
-### Ensemble sizes behind these figures
-The **calibration / PIT** (`calibration*/`, `calibration_p30/`) and **recall**
-(`recall/`, `recall_effort/`) outputs come from the **50-member** ensemble reconstructions
-(the `reconstructions_*_n50` folders — `n50` = "ensemble of 50", for K=5, p=0.10, p=0.30).
-The **per-species map** (`Fig02_*`) and **posterior** (`posterior_*`) outputs come from the
-default **8-member** ensembles (`reconstructions_unseen`). This is verifiable in the CSVs
-here: the `n_ens` column is **50** in `calibration*/pit_*.csv` and **8** in
-`posterior_*/*_metrics_*.csv`.
+| Term | What it means here |
+|---|---|
+| **Records / observations** | The handful of grid cells where a species was actually "seen". The model only gets these, and has to guess the rest of the range. |
+| **K5** | Fixed budget: exactly **5 records** per species. |
+| **p10 / p30** | Proportional budget: **10% / 30%** of the species' true range is recorded. |
+| **Ensemble (8 or 50)** | The model doesn't give one map — it draws **many plausible maps**. `8ens` = 8 draws (used for pictures), `50ens` = 50 draws (used for statistics). Where the draws agree = confident; where they disagree = uncertain. |
+| **Posterior map** | The per‑cell probability a species is present, taken as the fraction of ensemble draws that put it there. |
+| **Conditional** | Same picture, but each draw is forced to have the true number of occupied cells, so only the *shape* of the range varies. |
+| **Recall (near / far)** | Of the hidden occupied cells, how many the model finds — split into **near** a record (≤2 cells) vs **far**. |
+| **Coverage / calibration** | Whether the true range actually falls inside the spread of the ensemble — i.e. whether the model's confidence is **honest**. |
 
-### The `_149_K5` naming
-`final_unified_149_K5/` = figures built from the **epoch-149** FIXAB checkpoint at
-fixed budget **K=5**. To reproduce byte-for-byte you must use the epoch-149 checkpoint
-(the cov-det optimum threshold at that epoch is p ≥ 0.9, KS=0.047). See the training
-section of [`../README.md`](../README.md) for what "149" means.
+---
 
-### Reproduce everything here
-1. Train → epoch-149 FIXAB checkpoint (`../README.md` §3).
-2. Generate `reconstructions_unseen/`, `reconstructions_proportional_*` (`../README.md` §5).
-3. Run the figure scripts in [`../models/README.md`](../models/README.md) §"Figures",
-   pointing `--output-*` into this folder.
+## The 9 figure groups
+
+### 1. `paper_posterior_k5/` — per‑species range reconstructions → **Paper Figure 2**
+What it shows: for a few example species, the **true range** next to the model's
+**reconstructed probability map** from only a few records. Variants cover the fixed
+budget (`main_K5`, `rare_K5`), proportional budgets (`rare_p10`, `rare_p30`,
+`wide_p30`), ensemble sizes (`8ens`, `50ens`), and `_conditional` (fixed range size).
+This is the headline result: plausible, record‑anchored maps for rare species.
+- Tables: `baseline_compare_*.csv` (model vs a simple Gaussian smoother), `rare_audit_*.csv`, `smoother_*.log`.
+- Regenerate: `python models/posterior_per_species.py --truth-dir <…> --recon-dir-pattern <…> --world-stem <…> --K 5 --output-path <…>`
+
+### 2. `recall/` — how many hidden cells are recovered → **Paper Figure 5**
+What it shows: recall plotted against the number of records (and against the fraction
+of range observed), split into **near** vs **far** cells, with the random‑chance floor.
+The message: the model beats chance strongly **near** records, and sits at chance far away.
+- Files: `Fig_recall_vs_observations.*`, `Fig_recall_by_regime.*`, `recall_vs_observations.csv`.
+- Regenerate: `python models/recall_vs_observations.py --truth-dir <…> --world-stems <…> --labels <…> --recon-dir-patterns <…> --recon-filenames <…>`
+
+### 3. `fig4_v2_all/` and 4. `fig4_v2_indist/` — are the *shapes* realistic? → **Paper Figure 4**
+What it shows: across many species, the model's reconstructed ranges have the same
+**fragmentation** (how broken‑up) and **spatial spread** as the true ranges.
+`fig4_v2_all` pools all test worlds; `fig4_v2_indist` uses only the in‑distribution ones.
+- Files: `Fig4_distributional_realism.*` (+ `_values.csv`, `_router.csv`, `_dropped.csv`).
+- Regenerate: `python models/axel_ecological_distribution_figure.py --wide-range-csv <…> --truth-dir <…> --recon-dir-pattern <…> --K 5 --output <…>`
+
+### 5. `fig4_regression/` — the shape relationship as a fit → **Paper Figure 4 (variant)**
+Same realism test shown as a regression (`Fig4.*`, `Fig4_router.csv`, `Fig4_values.csv`),
+produced by the same script with the regression grid option.
+
+### 6. `calibration_figs/` — is the confidence honest? → **Paper Figure 6 + calibration**
+What it shows: **coverage/calibration** at the fixed budget (`K_5`) and proportional
+budgets (`p_0_10`, `p_0_30`), and how calibration improves with more records
+(`vs_records`). Each has a `_values.csv` with the exact numbers.
+- Regenerate: `python models/pit_calibration_figures.py --csv <pit_values.csv> --output <…>`
+
+### 7. `obs_schemes/` — what the two recording rules look like → **Supplementary**
+What it shows: side‑by‑side of the fixed‑budget vs proportional recording schemes at
+10% and 30% (`Fig_observation_extremes_p0.10`, `p0.30`), so readers see the two ways
+records accumulate in nature.
+- Regenerate: `python models/observation_extremes_figure.py --truth-dir <…> --world-stems <…> --prob 0.10 --output <…>`
+
+### 8. `figs_EI/` — the final assembled panels → **Figure 6, Figure S2, Figure S3**
+The paper‑ready, labelled versions: `Figure_6.pdf` (calibration), `Figure_S2.pdf`
+(observation schemes) and `Figure_S3.pdf`, bundled with the calibration and
+observation‑extreme panels they are built from. Made by `pit_calibration_figures.py`
+and `observation_extremes_figure.py`.
+
+### 9. `ablation/` — which inputs actually matter → **Paper Figure 7**
+What it shows: a **leave‑one‑out** test — remove the records, the interaction network,
+the environment, or the species features, and see what happens to recall and shape.
+The message: removing the **records** destroys performance; removing the process inputs
+barely changes it. `Fig_ablation*` are the figures; `ablation_per_species*.csv` the data.
+- Regenerate (two steps): run the arms with `python models/run_ablation_spatial.py --stage2-dir <…> --checkpoint <…> --truth-npz <…> --output-dir <…> --variants <…>`, then make the figure with `python models/ablation_analyse.py --csv ablation_per_species.csv --out ablation/Fig_ablation`.
+
+---
+
+## Notes for exact reproduction
+- **Ensemble sizes:** map pictures use the **8‑member** ensembles; calibration/recall
+  statistics use the **50‑member** ensembles (`*_50ens`). This is recorded in the CSVs.
+- **File types:** each figure ships as both `.pdf` (vector, for the manuscript) and
+  `.png` (preview), with a `_values.csv` holding the plotted numbers.
+- **Script output folder:** the generator scripts were written to output into a local
+  folder named `figures_map_axel_stage2_new/` (note `_axel_`). When you regenerate,
+  point each script's `--output`/`--out-dir` at this folder, or rename accordingly.
+- **Full flag list:** every script accepts `--help` (`python models/<script>.py --help`)
+  for the complete, exact set of options and paths.
+- Model weights, reconstruction `.npz` files and raw simulation data are **not** stored
+  here (too large); see the repository root `README.md` for where they live and how the
+  reconstructions are produced before these figures are drawn.
