@@ -63,16 +63,16 @@ in [`stage2_objective_AI_meta/README.md`](stage2_objective_AI_meta/README.md).
   `--stage2-dir stage2_objective_AI_meta` (or rely on auto-detection).
 ## Citation & DOI
 
-A citable snapshot of this repository is archived on **Zenodo** — each tagged GitHub
-release mints its own DOI.
+Citation metadata is in [`CITATION.cff`](CITATION.cff) — GitHub shows a **"Cite this
+repository"** button from it. A citable snapshot is archived on **Zenodo**, and each
+tagged GitHub release mints its own DOI (Zenodo metadata is in [`.zenodo.json`](.zenodo.json)).
 
-> **DOI:** _added after the first Zenodo release_ (see the release steps once set up).
+> **DOI:** _added after the first Zenodo release._
 
 If you use this code or the simulated data, please cite the Objective-2 paper together
 with this repository.
 
 ## License
 
-No license file is included yet. Before publishing, add a `LICENSE` (for example **MIT**
-for permissive code reuse, or **CC-BY-4.0** for attribution) so others know how they may
-use the code and figures — Zenodo and most journals expect one.
+Released under the **MIT License** — see [`LICENSE`](LICENSE). You may reuse the code
+freely, provided the copyright notice and license text are retained.

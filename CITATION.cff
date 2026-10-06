@@ -1,0 +1,32 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using the metadata below."
+title: "PSD-Metacommunity-Dispersal_AI: MetaDiffusion for process-aware species-distribution reconstruction"
+abstract: >-
+  A two-stage pipeline for process-aware species-distribution modelling with
+  uncertainty. Stage 1 is a Lotka-Volterra individual-based metacommunity
+  simulation; Stage 2 ("MetaDiffusion") is a conditional diffusion model that
+  reconstructs full species range maps, with ensemble-based uncertainty, from a
+  handful of records - with a focus on rare, range-restricted species.
+type: software
+authors:
+  - family-names: Shahin
+    given-names: Sara
+    affiliation: "Queen Mary University of London"
+# To add co-authors, copy the two lines below and fill them in:
+#  - family-names: <Surname>
+#    given-names: <First name>
+#    affiliation: "<Institution>"
+version: 1.0.0
+date-released: "2026-10-06"
+license: MIT
+repository-code: "https://github.com/sarashahin/PSD-Metacommunity-Dispersal_AI"
+url: "https://github.com/sarashahin/PSD-Metacommunity-Dispersal_AI"
+keywords:
+  - species distribution model
+  - metacommunity
+  - diffusion model
+  - generative model
+  - ecology
+  - biodiversity
+  - uncertainty quantification
+  - rare species
