@@ -85,6 +85,13 @@ def load_all(rows_subset, keep_samples):
     return out
 
 rows = sorted(csv.DictReader(open(MANIFEST)), key=lambda r: r["filename"])
+DROP = ("ls10p0_vr0p001_thr1p0_env789_grid20x20_dr2em08_ld0p2",    # identical copies of other
+        "ls10p0_vr0p001_thr1p0_env2024_grid20x20_dr2em08_ld0p2",   # evaluation files (V9 review, R2)
+        "ls5p0_vr0p002_thr1p0_env789_grid20x20_dr2em08_ld0p2",
+        "ls10p0_vr0p002_thr1p0_env789_grid20x20_dr2em07_ld0p2",
+        "ls5p0_vr0p002_thr1p0_env789_grid20x20_dr1em08_ld0p0")
+rows = [r for r in rows if not any(d in r["filename"] for d in DROP)]
+print(f"files after removing copies: {len(rows)} (calibration {len(rows[0::2])}, reporting {len(rows[1::2])})")
 calib_cache  = load_all(rows[0::2], keep_samples=False)   # calib: mean+obs+truth only
 report_cache = load_all(rows[1::2], keep_samples=True)     # report: keep 8 samples for ENS
 if not calib_cache or not report_cache:
@@ -258,6 +265,7 @@ print("  DISTRIBUTIONAL (lower KS = better; Axel bar <= 0.30)  [diffusion must b
 line("range-size KS",    ks(res['diff']['TR'],res['diff']['PR']), ks(res['base']['TR'],res['base']['PR']))
 line("connectance KS",   ks(res['diff']['TC'],res['diff']['PC']), ks(res['base']['TC'],res['base']['PC']))
 line("spatial-spread KS",ks(res['diff']['TS'],res['diff']['PS']), ks(res['base']['TS'],res['base']['PS']))
+print(f"  mean patches: truth {np.mean(res['diff']['TC']):.2f}, diffusion {np.mean(res['diff']['PC']):.2f}, smoother {np.mean(res['base']['PC']):.2f}")
 print("  " + "-"*58)
 print("  POINTWISE (higher = better hit-rate; smoother EXPECTED to win)")
 line("recall novel",  mn(res['diff']['nov']),  mn(res['base']['nov']),  pct=True)
@@ -280,8 +288,8 @@ print(f"  ensemble cover: diffusion {en_d:.0%} vs smoother {en_b:.0%} -> "
       f"{'DIFFUSION COVERS MORE' if en_d > en_b else 'CHECK: ensemble not ahead'}")
 
 OUT = Path("figures_map_axel_stage2_new/unseen_eval/paper_posterior_k5"); OUT.mkdir(parents=True, exist_ok=True)
-with open(OUT / f"baseline_compare_K{K}.csv", "w", newline="") as f:
+with open(OUT / f"baseline_compare_K{K}_distinct.csv", "w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=list(per_species_rows[0].keys()))
     w.writeheader()
     for r in per_species_rows: w.writerow(r)
-print(f"\n  per-species CSV -> {OUT}/baseline_compare_K{K}.csv")
+print(f"\n  per-species CSV -> {OUT}/baseline_compare_K{K}_distinct.csv")

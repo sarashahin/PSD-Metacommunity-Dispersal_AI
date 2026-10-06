@@ -85,6 +85,16 @@ def load_all(rows_subset, keep_samples):
     return out
 
 rows = sorted(csv.DictReader(open(MANIFEST)), key=lambda r: r["filename"])
+DROP = ("ls10p0_vr0p001_thr1p0_env789_grid20x20_dr2em08_ld0p2",    # identical copies of other
+        "ls10p0_vr0p001_thr1p0_env2024_grid20x20_dr2em08_ld0p2",   # evaluation files (V9 review, R2)
+        "ls5p0_vr0p002_thr1p0_env789_grid20x20_dr2em08_ld0p2",
+        "ls10p0_vr0p002_thr1p0_env789_grid20x20_dr2em07_ld0p2",
+        "ls5p0_vr0p002_thr1p0_env789_grid20x20_dr1em08_ld0p0")
+ALL30 = len(sys.argv) > 2 and sys.argv[2] == "all"
+if ALL30: DROP = ()
+TAG = "_all30" if ALL30 else "_distinct"
+rows = [r for r in rows if not any(d in r["filename"] for d in DROP)]
+print(f"files after removing copies: {len(rows)} (calibration {len(rows[0::2])}, reporting {len(rows[1::2])})")
 calib_cache  = load_all(rows[0::2], keep_samples=False)   # calib: mean+obs+truth only
 report_cache = load_all(rows[1::2], keep_samples=True)     # report: keep 8 samples for ENS
 if not calib_cache or not report_cache:
@@ -258,6 +268,7 @@ print("  DISTRIBUTIONAL (lower KS = better; Axel bar <= 0.30)  [diffusion must b
 line("range-size KS",    ks(res['diff']['TR'],res['diff']['PR']), ks(res['base']['TR'],res['base']['PR']))
 line("connectance KS",   ks(res['diff']['TC'],res['diff']['PC']), ks(res['base']['TC'],res['base']['PC']))
 line("spatial-spread KS",ks(res['diff']['TS'],res['diff']['PS']), ks(res['base']['TS'],res['base']['PS']))
+print(f"  mean patches: truth {np.mean(res['diff']['TC']):.2f}, diffusion {np.mean(res['diff']['PC']):.2f}, smoother {np.mean(res['base']['PC']):.2f}")
 print("  " + "-"*58)
 print("  POINTWISE (higher = better hit-rate; smoother EXPECTED to win)")
 line("recall novel",  mn(res['diff']['nov']),  mn(res['base']['nov']),  pct=True)
@@ -280,8 +291,31 @@ print(f"  ensemble cover: diffusion {en_d:.0%} vs smoother {en_b:.0%} -> "
       f"{'DIFFUSION COVERS MORE' if en_d > en_b else 'CHECK: ensemble not ahead'}")
 
 OUT = Path("figures_map_axel_stage2_new/unseen_eval/paper_posterior_k5"); OUT.mkdir(parents=True, exist_ok=True)
-with open(OUT / f"baseline_compare_K{K}.csv", "w", newline="") as f:
+with open(OUT / f"baseline_compare_K{K}{TAG}.csv", "w", newline="") as f:
     w = csv.DictWriter(f, fieldnames=list(per_species_rows[0].keys()))
     w.writeheader()
     for r in per_species_rows: w.writerow(r)
-print(f"\n  per-species CSV -> {OUT}/baseline_compare_K{K}.csv")
+print(f"\n  per-species CSV -> {OUT}/baseline_compare_K{K}{TAG}.csv")
+
+# ---------------- extra numbers for Section 3.6 ----------------
+from scipy.stats import spearmanr as _sp
+print(f"\n  EXTRA ({'all 30 files' if ALL30 else '25 distinct communities'}), K={K}")
+print(f"  KS, 4 decimals: range size diffusion {ks(res['diff']['TR'], res['diff']['PR']):.4f}, smoother {ks(res['base']['TR'], res['base']['PR']):.4f}")
+print(f"  mean range size: truth {np.mean(res['diff']['TR']):.2f}, diffusion {np.mean(res['diff']['PR']):.2f}, smoother {np.mean(res['base']['PR']):.2f}")
+print(f"  Spearman, true vs predicted patches: diffusion {_sp(res['diff']['TC'], res['diff']['PC'])[0]:.3f}, smoother {_sp(res['base']['TC'], res['base']['PC'])[0]:.3f}")
+_U, _uh, _sh, _d = [], [], [], []
+for truth, mean, obs, samples in report_cache:
+    for s in range(truth.shape[0]):
+        if int(truth[s].sum()) <= K: continue
+        N = pred_N(mean[s], iso['diff']); union = np.zeros(truth[s].size, bool)
+        for k in range(samples.shape[0]):
+            flat = samples[k, s].ravel()
+            if flat.max() > 1e-9: union[np.argpartition(flat, -N)[-N:]] = True
+        u = int(union.sum()); tn = ((truth[s] > 0) & ~(obs[s] > 0)).ravel()
+        sm = smoother_prob(obs[s], Kmat).ravel(); top = np.zeros(sm.size, bool)
+        if u > 0 and sm.max() > 1e-9: top[np.argpartition(sm, -u)[-u:]] = True
+        _U.append(u); _uh.append(int((tn & union).sum())); _sh.append(int((tn & top).sum())); _d.append(int(tn.sum()))
+_U, _uh, _sh, _d = (np.array(v, float) for v in (_U, _uh, _sh, _d)); _ok = _d > 0
+print(f"  union of the samples: mean {_U.mean():.1f} cells per species")
+print(f"  hidden-cell recall at the union's cell count: union mean {np.mean(_uh[_ok] / _d[_ok]):.1%}, pooled {_uh.sum() / _d.sum():.1%}; "
+      f"smoother mean {np.mean(_sh[_ok] / _d[_ok]):.1%}, pooled {_sh.sum() / _d.sum():.1%}")

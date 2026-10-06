@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 =============================================================================
-RECALL vs OBSERVATIONS  —  Axel's paper figure
+RECALL vs OBSERVATIONS  —  MEE paper figure (rewrite)
 =============================================================================
 Axel's request:
     "Recall (far/near, and similar) as a function of (a) number of
@@ -9,26 +9,29 @@ Axel's request:
      predicts true locations to some extent, and that prediction makes
      good use of sampled presence data."
 
-This pools every species across ALL supplied sampling regimes (e.g. K=5,
-proportional 10%, proportional 30%) and plots recall on the UNOBSERVED true
-cells as a function of:
-    (a) the number of observations a species had, and
-    (b) the percentage of its true range that was observed,
-against the random baseline. Three recall series are shown:
-    NEAR  recall on novel cells within `near_radius` of an observation
-          (local spatial autocorrelation)
-    FAR   recall on novel cells beyond that radius (true extrapolation)
-    ENS   recall under the ensemble union of all samples at top-N ("and similar")
+WHAT CHANGED vs the previous version (and why)
+----------------------------------------------
+1. ENS baseline corrected. The ENS series is the UNION of the S ensemble
+   samples, so its random baseline must be the union of S random top-N
+   draws:  bl_ens = 1 - (1 - R/cand)^S  (cand = unobserved cells).
+   The old code used R/cand (a single draw), which under-stated chance and
+   disagreed with the per-species map figure ("chance 54%"). Fixed here so
+   both figures use the same definition.
+2. Readable layout. Three schemes x three series = 9 overlapping lines was
+   unreadable. Now a 2x2 grid:
+      row 1  NEAR / FAR / ENS pooled over all schemes   -> "does it work"
+      row 2  one clean line per scheme (K=5 / p=0.10 / p=0.30) -> "K vs prop"
+      col A  vs number of observations   col B  vs % of range observed
+   Each panel has at most 3 data lines.
+3. Baselines are faint dotted lines (one legend proxy), not a thicket.
+4. No baked-in bottom caption and no world-string title (put text in the
+   LaTeX caption). Panel tags (A)-(D) in bold, per MEE.
+5. Vector PDF (crisp at any size) + 300-dpi PNG. Fonts >= 8 pt at final size.
 
-It reuses the EXACT recall functions from axel_per_species_map_ecological.py,
-so the numbers match the per-world map figures. Keep both files in the same
-folder.
+Keep this file in the same folder as axel_per_species_map_ecological.py so
+the recall functions match the map figure exactly.
 
-Default pools all regimes onto one trend (the "records govern recall"
-message). --by-regime instead draws one NEAR+FAR line per regime so the
-three sampling schemes can be contrasted directly.
-
-USAGE (three regimes, both x-axes, PNG + PDF):
+USAGE (see bottom of this file for a full runnable block):
     python recall_vs_observations.py \
       --truth-dir ./results/data/data_eval_unseen \
       --world-stems STEM1 STEM2 ... \
@@ -39,7 +42,7 @@ USAGE (three regimes, both x-axes, PNG + PDF):
       --recon-filenames recon_fixed_b5_samples.npz \
                         recon_prop_p0.10_samples.npz \
                         recon_prop_p0.30_samples.npz \
-      --x both --include-ens \
+      --layout full --x both --include-ens --scheme-metric near \
       --output ./results/Fig_recall_vs_observations \
       --csv ./results/recall_vs_observations.csv
 =============================================================================
@@ -53,6 +56,7 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 # Reuse the identical logic used by the per-world map figures.
 from axel_per_species_map_ecological import (
@@ -62,12 +66,24 @@ from axel_per_species_map_ecological import (
     GRID_Y, GRID_X,
 )
 
-OBS_BINS = [(1, 1, '1'), (2, 2, '2'), (3, 4, '3-4'), (5, 9, '5-9'), (10, 10**9, '10+')]
-PCT_BINS = [(0, 10, '\u226410'), (10, 20, '10-20'), (20, 30, '20-30'),
-            (30, 50, '30-50'), (50, 100.01, '>50')]
+# --- binning ----------------------------------------------------------------
+OBS_BINS = [(1, 1, '1'), (2, 2, '2'), (3, 4, '3\u20134'), (5, 9, '5\u20139'),
+            (10, 10**9, '10+')]
+PCT_BINS = [(0, 10, '\u226410'), (10, 20, '10\u201320'), (20, 30, '20\u201330'),
+            (30, 50, '30\u201350'), (50, 100.01, '>50')]
 
+# Paul Tol colourblind-safe
 C_NEAR, C_FAR, C_ENS = '#4477AA', '#EE6677', '#228833'
-REGIME_COLORS = ['#4477AA', '#EE6677', '#228833', '#CCBB44', '#AA3377']
+SCHEME_COLORS = ['#4477AA', '#EE6677', '#228833', '#CCBB44', '#AA3377']
+C_BASE = '#777777'
+
+plt.rcParams.update({
+    'font.size': 9, 'axes.labelsize': 9, 'axes.titlesize': 10,
+    'xtick.labelsize': 8, 'ytick.labelsize': 8, 'legend.fontsize': 8,
+    'axes.linewidth': 0.8, 'lines.solid_capstyle': 'round',
+    'figure.dpi': 300, 'savefig.dpi': 300,
+    'pdf.fonttype': 42, 'ps.fonttype': 42,   # keep text editable in vector output
+})
 
 
 # ---------------------------------------------------------------------------
@@ -82,15 +98,30 @@ def topN_binary(mean_sp, n):
     return b.reshape(mean_sp.shape)
 
 
+def ens_union_baseline(range_N, n_obs, n_samples, grid=GRID_Y * GRID_X):
+    """Random chance for the ENSEMBLE UNION recall on novel cells.
+
+    Each of `n_samples` random draws marks `range_N` cells among the
+    `cand = grid - n_obs` unobserved cells. For one novel truth cell the
+    chance a single draw hits it is p = range_N / cand; the chance the
+    UNION of S independent draws hits it is 1 - (1 - p)^S. This matches the
+    'chance' printed on the per-species map figure.
+    """
+    cand = max(1, grid - n_obs)
+    p_single = min(1.0, range_N / cand)
+    return 1.0 - (1.0 - p_single) ** max(1, n_samples)
+
+
 def collect_rows(truth_dir, stems, label, pattern, filename, near_radius):
-    """One row per species: its record count, % observed, and NEAR/FAR/ENS
-    recall with matched random baselines."""
+    """One row per species: record count, % observed, NEAR/FAR/ENS recall and
+    matched random baselines (ENS baseline uses the union-of-S formula)."""
     rows = []
     grid = GRID_Y * GRID_X
     for stem in stems:
         w = load_world(truth_dir, pattern, stem, recon_filename=filename)
         truth, samples, mean, obs = (w['truth'], w['samples'],
                                      w['mean_pred'], w['observed'])
+        S = int(samples.shape[0])                     # ensemble size
         for sp in range(truth.shape[0]):
             R = int(truth[sp].sum())
             if R <= 0:
@@ -99,13 +130,14 @@ def collect_rows(truth_dir, stems, label, pattern, filename, near_radius):
             recon = topN_binary(mean[sp], R)
             nf = per_species_recall_near_far(truth[sp], recon, obs[sp],
                                              near_radius=near_radius)
-            ens_rec, _ = compute_ensemble_truth_coverage(truth[sp], samples[:, sp], obs[sp])
+            ens_rec, _ = compute_ensemble_truth_coverage(truth[sp],
+                                                         samples[:, sp], obs[sp])
             rows.append(dict(
                 regime=label, world=stem, sp=sp, range_N=R, n_obs=n_obs,
-                pct_obs=100.0 * n_obs / R,
+                pct_obs=100.0 * n_obs / R, n_samples=S,
                 rec_near=nf['rec_near'], rec_far=nf['rec_far'], rec_ens=ens_rec,
                 bl_near=nf['baseline_near'], bl_far=nf['baseline_far'],
-                bl_ens=R / max(1, grid - n_obs)))
+                bl_ens=ens_union_baseline(R, n_obs, S, grid)))
     return rows
 
 
@@ -114,60 +146,119 @@ def binned_mean(rows, key, bins, field):
     ys, ns = [], []
     for lo, hi, _ in bins:
         vals = [r[field] for r in rows
-                if lo <= r[key] <= hi and r[field] == r[field]]  # NaN-safe
+                if lo <= r[key] <= hi and r[field] == r[field]]   # NaN-safe
         ys.append(np.mean(vals) if vals else np.nan)
         ns.append(len(vals))
     return np.array(ys), np.array(ns)
 
 
-def draw_panel(ax, rows, key, bins, include_ens, by_regime, regimes, xlabel):
+# --- panels -----------------------------------------------------------------
+def _style(ax, xlabels, xlabel, tag):
+    ax.set_xticks(range(len(xlabels)))
+    ax.set_xticklabels(xlabels)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel('recall on unobserved true cells  [%]')
+    ax.set_ylim(0, 100)
+    ax.set_yticks(range(0, 101, 20))
+    ax.grid(axis='y', lw=0.4, alpha=0.35)
+    ax.spines[['top', 'right']].set_visible(False)
+    ax.text(0.015, 0.98, tag, transform=ax.transAxes, fontweight='bold',
+            fontsize=11, va='top', ha='left')
+
+
+def panel_pooled(ax, rows, key, bins, xlabel, tag, include_ens, show_n):
     x = np.arange(len(bins))
     labels = [b[2] for b in bins]
-    if by_regime:
-        for ri, rlabel in enumerate(regimes):
-            rr = [r for r in rows if r['regime'] == rlabel]
-            c = REGIME_COLORS[ri % len(REGIME_COLORS)]
-            yn, _ = binned_mean(rr, key, bins, 'rec_near')
-            yf, _ = binned_mean(rr, key, bins, 'rec_far')
-            ax.plot(x, yn * 100, '-o', color=c, lw=2.0, ms=6, label=f'NEAR {rlabel}')
-            ax.plot(x, yf * 100, '--s', color=c, lw=2.0, ms=6, label=f'FAR {rlabel}')
-    else:
-        series = [('rec_near', 'bl_near', 'NEAR (\u22642 cells)', C_NEAR, 'o'),
-                  ('rec_far',  'bl_far',  'FAR (>2 cells)',       C_FAR,  's')]
-        if include_ens:
-            series.append(('rec_ens', 'bl_ens', 'ENS (any sample)', C_ENS, '^'))
-        for field, blf, lab, c, mk in series:
-            y, _ = binned_mean(rows, key, bins, field)
-            yb, _ = binned_mean(rows, key, bins, blf)
-            ax.plot(x, y * 100, marker=mk, color=c, lw=2.3, ms=7, label=lab)
-            ax.plot(x, yb * 100, ls=':', color=c, lw=1.3, alpha=0.75)
-        _, ncount = binned_mean(rows, key, bins, 'rec_far')
-        for i, nn in enumerate(ncount):
+    series = [('rec_near', 'bl_near', 'NEAR (\u22642 cells)', C_NEAR, 'o'),
+              ('rec_far',  'bl_far',  'FAR (>2 cells)',       C_FAR,  's')]
+    if include_ens:
+        series.append(('rec_ens', 'bl_ens', 'ENS (union)', C_ENS, '^'))
+    for field, blf, lab, c, mk in series:
+        y, _ = binned_mean(rows, key, bins, field)
+        yb, _ = binned_mean(rows, key, bins, blf)
+        ax.plot(x, y * 100, marker=mk, color=c, lw=2.2, ms=6, label=lab, zorder=3)
+        ax.plot(x, yb * 100, ls=':', color=c, lw=1.2, alpha=0.7, zorder=2)
+    if show_n:
+        _, nc = binned_mean(rows, key, bins, 'rec_near')
+        for i, nn in enumerate(nc):
             if nn:
-                ax.annotate(f'n={nn}', (x[i], 2.0), ha='center', va='bottom',
-                            fontsize=7, color='#888')
-    ax.set_xticks(x)
-    ax.set_xticklabels(labels)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel('recall on unobserved true cells   [%]')
-    ax.set_ylim(0, 100)
-    ax.legend(fontsize=8, frameon=False, ncol=1)
-    ax.spines[['top', 'right']].set_visible(False)
+                ax.annotate(f'n={nn}', (x[i], 1.5), ha='center', va='bottom',
+                            fontsize=6.5, color='#999')
+    _style(ax, labels, xlabel, tag)
+    handles, labs = ax.get_legend_handles_labels()
+    handles.append(Line2D([0], [0], ls=':', color=C_BASE, lw=1.2))
+    labs.append('random baseline')
+    ax.legend(handles, labs, frameon=False, loc='upper right', handlelength=1.6)
+
+
+def panel_by_scheme(ax, rows, key, bins, xlabel, tag, metric, regimes):
+    x = np.arange(len(bins))
+    labels = [b[2] for b in bins]
+    field = {'near': 'rec_near', 'far': 'rec_far', 'ens': 'rec_ens'}[metric]
+    blf   = {'near': 'bl_near',  'far': 'bl_far',  'ens': 'bl_ens'}[metric]
+    mname = {'near': 'NEAR', 'far': 'FAR', 'ens': 'ENS'}[metric]
+    for ri, rlabel in enumerate(regimes):
+        rr = [r for r in rows if r['regime'] == rlabel]
+        c = SCHEME_COLORS[ri % len(SCHEME_COLORS)]
+        y, _ = binned_mean(rr, key, bins, field)
+        ax.plot(x, y * 100, marker='o', color=c, lw=2.2, ms=6, label=rlabel, zorder=3)
+    yb, _ = binned_mean(rows, key, bins, blf)             # one pooled baseline
+    ax.plot(x, yb * 100, ls=':', color=C_BASE, lw=1.2, alpha=0.8, zorder=2,
+            label='random baseline')
+    _style(ax, labels, xlabel, tag)
+    ax.legend(frameon=False, loc='upper right', title=f'{mname} by scheme',
+              title_fontsize=8, handlelength=1.6)
+
+
+# --- figure builder ---------------------------------------------------------
+def build_figure(rows, regimes, layout, x, include_ens, scheme_metric,
+                 show_n, title):
+    cols = []
+    if x in ('both', 'obs'):
+        cols.append(('n_obs', OBS_BINS, 'number of observations per species'))
+    if x in ('both', 'pct'):
+        cols.append(('pct_obs', PCT_BINS, '% of true range observed'))
+
+    row_kinds = {'full': ['pooled', 'by-scheme'],
+                 'pooled': ['pooled'],
+                 'by-scheme': ['by-scheme']}[layout]
+
+    nrows, ncols = len(row_kinds), len(cols)
+    fw = 6.9 if ncols == 2 else 3.7
+    fh = 3.15 * nrows + 0.15
+    fig, axes = plt.subplots(nrows, ncols, figsize=(fw, fh), squeeze=False)
+
+    tag = iter([f'({c})' for c in 'ABCDEFGH'])
+    for r, kind in enumerate(row_kinds):
+        for c, (key, bins, xlabel) in enumerate(cols):
+            ax = axes[r][c]
+            if kind == 'pooled':
+                panel_pooled(ax, rows, key, bins, xlabel, next(tag),
+                             include_ens, show_n)
+            else:
+                panel_by_scheme(ax, rows, key, bins, xlabel, next(tag),
+                                scheme_metric, regimes)
+
+    if title:
+        fig.suptitle(title, fontweight='bold', fontsize=12)
+    fig.tight_layout(rect=[0, 0, 1, 0.97 if title else 1.0])
+    return fig
 
 
 def write_csv(path, rows):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    fields = ['regime', 'world', 'sp', 'range_N', 'n_obs', 'pct_obs',
+    fields = ['regime', 'world', 'sp', 'range_N', 'n_obs', 'pct_obs', 'n_samples',
               'rec_near', 'rec_far', 'rec_ens', 'bl_near', 'bl_far', 'bl_ens']
     with open(path, 'w', newline='') as f:
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
         for r in rows:
             out = {k: r[k] for k in fields}
-            for k in ('rec_near', 'rec_far', 'rec_ens', 'bl_near', 'bl_far', 'bl_ens', 'pct_obs'):
+            for k in ('rec_near', 'rec_far', 'rec_ens', 'bl_near', 'bl_far',
+                      'bl_ens', 'pct_obs'):
                 v = out[k]
-                out[k] = '' if (v != v) else round(float(v), 4)  # NaN -> ''
+                out[k] = '' if (v != v) else round(float(v), 4)   # NaN -> ''
             w.writerow(out)
 
 
@@ -176,72 +267,71 @@ def main():
     ap.add_argument('--truth-dir', required=True)
     ap.add_argument('--world-stems', nargs='+', required=True)
     ap.add_argument('--labels', nargs='+', required=True,
-                    help="regime labels, e.g. 'K=5' 'p=0.10' 'p=0.30'")
+                    help="scheme labels, e.g. 'K=5' 'p=0.10' 'p=0.30'")
     ap.add_argument('--recon-dir-patterns', nargs='+', required=True,
-                    help="parallel to --labels; each with {world_stem}")
+                    help="parallel to --labels; each contains {world_stem}")
     ap.add_argument('--recon-filenames', nargs='+', required=True,
-                    help="parallel to --labels; exact samples filename per regime")
+                    help="parallel to --labels; exact samples filename per scheme")
     ap.add_argument('--near-radius', type=int, default=2)
-    ap.add_argument('--x', choices=['obs', 'pct', 'both'], default='both')
-    ap.add_argument('--include-ens', action='store_true',
-                    help="add the ensemble-union recall line (Axel's 'and similar')")
+    ap.add_argument('--x', choices=['both', 'obs', 'pct'], default='both')
+    ap.add_argument('--layout', choices=['full', 'pooled', 'by-scheme'],
+                    default='full',
+                    help="full=2x2 (pooled + by-scheme); pooled or by-scheme = 1 row")
+    ap.add_argument('--scheme-metric', choices=['near', 'far', 'ens'],
+                    default='near', help="which recall the by-scheme row compares")
+    ap.add_argument('--include-ens', dest='include_ens', action='store_true',
+                    default=True, help="show ENS union in the pooled row (default on)")
+    ap.add_argument('--no-ens', dest='include_ens', action='store_false')
+    ap.add_argument('--show-n', action='store_true',
+                    help="annotate per-bin species counts on the pooled row")
+    ap.add_argument('--title', default='',
+                    help="optional on-figure title (default none; put it in the caption)")
     ap.add_argument('--by-regime', action='store_true',
-                    help="draw one NEAR+FAR line per regime instead of pooling")
-    ap.add_argument('--output', required=True, help="base path; writes .png and .pdf")
+                    help="deprecated alias; forces --layout by-scheme")
+    ap.add_argument('--output', required=True, help="base path; writes .pdf and .png")
     ap.add_argument('--csv', default=None, help="optional per-species CSV dump")
     args = ap.parse_args()
 
+    if args.by_regime and args.layout == 'full':
+        args.layout = 'by-scheme'
+
     n = len(args.labels)
     if not (len(args.recon_dir_patterns) == n and len(args.recon_filenames) == n):
-        ap.error("--labels, --recon-dir-patterns and --recon-filenames must be the same length")
+        ap.error("--labels, --recon-dir-patterns and --recon-filenames "
+                 "must be the same length")
 
     rows = []
-    for label, pattern, filename in zip(args.labels, args.recon_dir_patterns, args.recon_filenames):
-        r = collect_rows(args.truth_dir, args.world_stems, label, pattern, filename, args.near_radius)
+    for label, pattern, filename in zip(args.labels, args.recon_dir_patterns,
+                                        args.recon_filenames):
+        r = collect_rows(args.truth_dir, args.world_stems, label, pattern,
+                         filename, args.near_radius)
         print(f"  {label}: {len(r)} species from {len(args.world_stems)} world(s)")
         rows += r
     if not rows:
-        ap.error("no species collected — check paths/filenames")
+        ap.error("no species collected \u2014 check paths/filenames")
 
-    panels = [('n_obs', OBS_BINS, 'number of observations per species')] if args.x == 'obs' else \
-             [('pct_obs', PCT_BINS, '% of true range observed')] if args.x == 'pct' else \
-             [('n_obs', OBS_BINS, 'number of observations per species'),
-              ('pct_obs', PCT_BINS, '% of true range observed')]
-
-    fig, axes = plt.subplots(1, len(panels), figsize=(6.6 * len(panels), 5.2), squeeze=False)
-    for ax, (key, bins, xlabel) in zip(axes[0], panels):
-        draw_panel(ax, rows, key, bins, args.include_ens, args.by_regime, args.labels, xlabel)
-
-    fig.suptitle("AI recall on unobserved cells rises with the amount of presence data",
-                 fontweight='bold', fontsize=13)
-    fig.text(0.5, 0.005,
-             "Recall on truth cells the model was NOT shown, pooled across "
-             f"{', '.join(args.labels)}. NEAR = within {args.near_radius} cells of an "
-             "observation; FAR = beyond that (true extrapolation); "
-             + ("ENS = any ensemble sample; " if args.include_ens else "")
-             + "dotted = random baseline. Recall above the baseline means the model "
-               "predicts true locations; recall rising with data means it uses the records.",
-             ha='center', va='bottom', fontsize=8, style='italic', color='#555', wrap=True)
-    plt.tight_layout(rect=[0, 0.05, 1, 0.96])
+    fig = build_figure(rows, args.labels, args.layout, args.x, args.include_ens,
+                       args.scheme_metric, args.show_n, args.title)
 
     out = Path(args.output)
     out.parent.mkdir(parents=True, exist_ok=True)
     png, pdf = out.with_suffix('.png'), out.with_suffix('.pdf')
-    plt.savefig(png, dpi=180, bbox_inches='tight', facecolor='white')
-    plt.savefig(pdf, bbox_inches='tight', facecolor='white')
+    fig.savefig(pdf, bbox_inches='tight', facecolor='white')          # vector
+    fig.savefig(png, dpi=300, bbox_inches='tight', facecolor='white')  # raster
     plt.close(fig)
-    print(f"  \u2713 saved -> {png}")
     print(f"  \u2713 saved -> {pdf}")
+    print(f"  \u2713 saved -> {png}")
     if args.csv:
         write_csv(args.csv, rows)
         print(f"  \u2713 saved -> {args.csv}  ({len(rows)} rows)")
 
     # console summary: pooled recall by observation bin (the headline trend)
-    for lab, field in [('NEAR', 'rec_near'), ('FAR', 'rec_far')] + \
-                      ([('ENS', 'rec_ens')] if args.include_ens else []):
+    for lab, field in [('NEAR', 'rec_near'), ('FAR', 'rec_far'),
+                       ('ENS', 'rec_ens')]:
         y, nc = binned_mean(rows, 'n_obs', OBS_BINS, field)
-        cells = "  ".join(f"{OBS_BINS[i][2]}:{'' if y[i] != y[i] else f'{y[i]*100:.0f}%'}(n={nc[i]})"
-                          for i in range(len(OBS_BINS)))
+        cells = "  ".join(
+            f"{OBS_BINS[i][2]}:{'' if y[i] != y[i] else f'{y[i]*100:.0f}%'}"
+            f"(n={nc[i]})" for i in range(len(OBS_BINS)))
         print(f"    {lab:>4} by obs -> {cells}")
 
 
