@@ -1,0 +1,11 @@
+world_stem,n_species_present,mean_range_N,mean_records_proportional,zero_record_rate_pure_bernoulli,truth_key,cells_in_disputed_band
+pool22510000_batcha_ls5p0_vr0p002_thr1p0_env789_grid20x20_dr1em08_ld0p0_training,3212,2.02,1.15,0.5218,P_last_final,0
+pool22510000_batcha_ls1p0_vr0p004_thr1p0_env789_grid20x20_dr1em07_ld0p12_training,2855,2.16,1.19,0.5159,P_last_final,0
+pool22510000_batcha_ls2p5_vr0p008_thr3p0_env789_grid20x20_dr1em07_ld0p2_training,2566,2.24,1.20,0.5074,P_last_final,0
+pool22510000_batcha_ls10p0_vr0p002_thr1p0_env789_grid20x20_dr2em07_ld0p2_training,2995,2.15,1.19,0.5262,P_last_final,0
+pool22510000_batcha_ls10p0_vr0p001_thr1p0_env789_grid20x20_dr5em08_ld0p3_training,3152,2.12,1.19,0.5324,P_last_final,0
+pool22510000_batcha_ls20p0_vr0p001_thr1p0_env789_grid20x20_dr5em08_ld0p2_training,3168,2.09,1.18,0.5350,P_last_final,0
+
+POOLED,17948,2.125,1.183,0.5237,n/a,0
+STRUCTURE,median_range=2,max_range=57,frac_range_le_K=0.9612,frac_range_ge_floor(8)=0.0169,frac_forced_to_min_obs=0.5237,
+SETTINGS,p=0.3,min_obs=1,K=5,rng_seed=42,per_world_seed=0,threshold>0.0

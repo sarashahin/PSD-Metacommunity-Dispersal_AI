@@ -1,0 +1,32 @@
+K=10  calib worlds=15  report worlds=15
+presence cells among K=10 obs/species (report, nonzero median) = 2
+  NOTE: most of the K observations are ABSENCES; only ~2 are presences.
+  This is the real sparse-presence regime, not a loading bug — both methods read the
+  SAME noisy_input the diffusion model was conditioned on.
+
+chosen smoother sigma = 1.5  (calib novel recall = 23%)
+
+  K=10   report species (truth>10) = 390   smoother sigma = 1.5
+  ----------------------------------------------------------
+                                 DIFFUSION    GAUSS-SMOOTHER
+  ----------------------------------------------------------
+  DISTRIBUTIONAL (lower KS = better; Axel bar <= 0.30)  [diffusion must be UNCHANGED]
+  range-size KS                      0.390             0.444
+  connectance KS                     0.115             0.895
+  spatial-spread KS                  0.056             0.695
+  ----------------------------------------------------------
+  POINTWISE (higher = better hit-rate; smoother EXPECTED to win)
+  recall novel                         11%               26%
+  recall NEAR                          14%               34%
+  recall FAR                            1%                0%
+  AUC novel cells                    0.649             0.778
+  ----------------------------------------------------------
+  ENSEMBLE (Axel: 'truth is part of this ensemble'; diversity = different-each-run)
+  ENS-union recall                     26%               26%
+  ensemble diversity                 0.573             0.000
+    smoother is deterministic -> ENS = its single-map recall, diversity = 0 by construction
+  ----------------------------------------------------------
+  spatial-spread: smoother 0.695 vs diffusion 0.056 -> SMOOTHER WORSE (expected)
+  ensemble cover: diffusion 26% vs smoother 26% -> CHECK: ensemble not ahead
+
+  per-species CSV -> figures_map_axel_stage2_new/unseen_eval/paper_posterior_k5/baseline_compare_K10.csv

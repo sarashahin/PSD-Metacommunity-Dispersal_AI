@@ -1,0 +1,4 @@
+statistic,n_true,n_reconstructed,mean_true,mean_reconstructed,KS_D,n_communities,router,dedupe
+range_size,624,4992,17.395833333333332,17.009415064102566,0.2952724358974359,25,nested,True
+fragmentation,624,4992,9.27724358974359,9.796875,0.07632211538461539,25,nested,True
+spatial_spread,624,4992,2.2991521246918083,2.2940126837647177,0.05568910256410257,25,nested,True
