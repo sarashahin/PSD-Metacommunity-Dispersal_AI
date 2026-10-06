@@ -1,6 +1,7 @@
 # PSD Metacommunity — Dispersal + AI (MetaDiffusion)
 
 ![project badges](badges.svg)
+[![DOI](https://zenodo.org/badge/1305796641.svg)](https://doi.org/10.5281/zenodo.23195560)
 
 A two-stage pipeline for **process-aware species-distribution modelling** with
 uncertainty, built on a Lotka–Volterra / individual-based metacommunity simulation:
@@ -67,10 +68,15 @@ Citation metadata is in [`CITATION.cff`](CITATION.cff) — GitHub shows a **"Cit
 repository"** button from it. A citable snapshot is archived on **Zenodo**, and each
 tagged GitHub release mints its own DOI (Zenodo metadata is in [`.zenodo.json`](.zenodo.json)).
 
-> **DOI:** _added after the first Zenodo release._
+> **DOI (all versions):** [10.5281/zenodo.23195560](https://doi.org/10.5281/zenodo.23195560)
+> &nbsp;·&nbsp; **this release (v1.0.0):** [10.5281/zenodo.23195561](https://doi.org/10.5281/zenodo.23195561)
 
 If you use this code or the simulated data, please cite the Objective-2 paper together
-with this repository.
+with this repository, for example:
+
+> Shahin, S., & Rossberg, A. G. (2026). *PSD-Metacommunity-Dispersal_AI: MetaDiffusion
+> for process-aware species-distribution reconstruction* (v1.0.0). Zenodo.
+> https://doi.org/10.5281/zenodo.23195560
 
 ## License
 

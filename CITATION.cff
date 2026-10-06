@@ -17,6 +17,14 @@ authors:
     affiliation: "Queen Mary University of London"
 version: 1.0.0
 date-released: "2026-10-06"
+doi: 10.5281/zenodo.23195560
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23195560
+    description: "Concept DOI (all versions)"
+  - type: doi
+    value: 10.5281/zenodo.23195561
+    description: "Version v1.0.0"
 license: MIT
 repository-code: "https://github.com/sarashahin/PSD-Metacommunity-Dispersal_AI"
 url: "https://github.com/sarashahin/PSD-Metacommunity-Dispersal_AI"
