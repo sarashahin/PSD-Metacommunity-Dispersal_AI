@@ -61,6 +61,18 @@ in [`stage2_objective_AI_meta/README.md`](stage2_objective_AI_meta/README.md).
   and **not stored in git**; the READMEs document exactly how each is produced.
 - The scripts were authored under the path `AI_simulation/stage2/`; in this repo pass
   `--stage2-dir stage2_objective_AI_meta` (or rely on auto-detection).
-- CI (`.github/workflows`) runs default flake8/Django templates that fail on the Stage-1
-  placeholder stubs and the absence of a Django app — these failures are **pre-existing
-  and unrelated** to the Stage-2 code.
+## Citation & DOI
+
+A citable snapshot of this repository is archived on **Zenodo** — each tagged GitHub
+release mints its own DOI.
+
+> **DOI:** _added after the first Zenodo release_ (see the release steps once set up).
+
+If you use this code or the simulated data, please cite the Objective-2 paper together
+with this repository.
+
+## License
+
+No license file is included yet. Before publishing, add a `LICENSE` (for example **MIT**
+for permissive code reuse, or **CC-BY-4.0** for attribution) so others know how they may
+use the code and figures — Zenodo and most journals expect one.

@@ -41,10 +41,9 @@ at `AI_simulation/stage2/`, so their hard-coded USAGE examples say
 - Pass **`--stage2-dir stage2_objective_AI_meta`** (or omit it — most scripts
   auto-locate the stage-2 dir by searching for `models/ecodiffusion.py` +
   `configs/config.py` via `find_stage2_dir`).
-- One shell script was committed under a doubly-nested legacy path:
-  `models/AI_simulation/stage2/models/regenerate_all_inference_worlds_SPATIAL.sh`.
-  Treat its internal paths as illustrative and adapt `STAGE2_DIR` to
-  `stage2_objective_AI_meta`.
+- Scripts' hard-coded USAGE/example paths (e.g. `AI_simulation/stage2`) are
+  illustrative only — adapt them to `stage2_objective_AI_meta`, or rely on the
+  auto-detection above.
 
 **External artifacts not stored in git** (they are large / machine-local):
 
@@ -99,7 +98,7 @@ figure/calibration scripts are CPU-only.
    │ (c) UNSEEN METACOMMUNITIES design_unseen_eval_worlds.py ──► data_eval_unseen/
    │ (d) RECONSTRUCT (inference) models/generate_reconstructions_*.py ──► reconstructions_*/
    │ (e) EVALUATE / COVERAGE    models/multi_world_*_evaluation.py, compute_ensemble_coverage*
-   │ (f) ABLATION               models/run_ablation_v7.py (+ Archive v2/v5) ──► stage2_ablation_figures/
+   │ (f) ABLATION               models/run_ablation_spatial.py ──► figures_map_stage2_new/unseen_eval/ablation/
    │ (g) FIGURES                models/axel_*.py ──► figures_map_axel_stage2_new/
    └──────────────────────────────────────────────────────────────────────┘
 ```
@@ -343,6 +342,15 @@ python Archive/make_ablation_figures.py ablation_v5_merged.json \
 ---
 
 ## 8. (g) Reproduce the final figures (high accuracy)
+
+> **Authoritative figure map.** The paper's final figures live in
+> [`figures_map_stage2_new/`](figures_map_stage2_new/README.md) in **9 groups**, and that
+> README lists, for **each figure → the exact current script** that produces it
+> (`posterior_per_species.py`, `axel_ecological_distribution_figure.py`,
+> `recall_vs_observations.py`, `pit_calibration_figures.py`,
+> `observation_extremes_figure.py`, and `run_ablation_spatial.py` + `ablation_analyse*.py`).
+> See also [`models/README.md`](models/README.md). The commands below remain a valid
+> end-to-end recipe for the underlying reconstructions.
 
 Full per-figure commands are in `models/README.md`. The headline reproductions:
 
