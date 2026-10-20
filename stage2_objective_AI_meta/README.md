@@ -67,14 +67,17 @@ Create a working root and run everything from it (paths below assume this layout
 └── figures_map_axel_stage2_new/
 ```
 
-**Python environment** (no `requirements.txt` is shipped; these are the imports the
-code actually uses):
+**Python environment** (`../requirements.txt` lists the imports the code actually uses):
 
 ```bash
 python -m venv lvmeta && source lvmeta/bin/activate      # or conda
-pip install torch numpy tqdm scikit-learn scipy matplotlib pyyaml
+pip install -r ../requirements.txt
 # torch.amp.autocast/GradScaler API implies torch >= ~2.3
 ```
+
+**Quick check without real data.** `bash ../tests/run_checks.sh` builds tiny synthetic
+worlds and runs the smoke test, the Fix-A check and one reconstruction on CPU
+(a few minutes).
 
 `torch_geometric` is only needed by the **legacy** `data/preprocessing.py`, which is
 **not** used by the active pipeline (see `data/README.md`).

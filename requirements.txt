@@ -1,0 +1,9 @@
+# Stage 2 (stage2_objective_AI_meta). torch.amp API needs torch >= 2.3.
+torch>=2.3
+numpy
+scipy
+scikit-learn
+matplotlib
+pyyaml
+tqdm
+pandas
