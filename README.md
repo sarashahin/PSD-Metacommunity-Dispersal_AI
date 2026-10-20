@@ -1,7 +1,7 @@
 # PSD Metacommunity — Dispersal + AI (MetaDiffusion)
 
 ![project badges](badges.svg)
-[![DOI](https://zenodo.org/badge/1305796641.svg)](https://doi.org/10.5281/zenodo.23195560)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23195560.svg)](https://doi.org/10.5281/zenodo.23195560)
 
 A two-stage pipeline for **process-aware species-distribution modelling** with
 uncertainty, built on a Lotka–Volterra / individual-based metacommunity simulation:
